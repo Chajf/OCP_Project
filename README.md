@@ -1,10 +1,10 @@
-# Twitter (X) sentiment analysis
+# 4chan sentiment analysis
 
 ## Project description
 
 The main goal of the project is to build a functional system of interconnected modules using docker containerization.
 
-The system is designed to analyze the sentiment of posts on X (formerly Twitter).
+The system is designed to analyze the sentiment of comments from posts on 4chan.
 
 Communication is handled using REST API and fastAPI framework.
 
