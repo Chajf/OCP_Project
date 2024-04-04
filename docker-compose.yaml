@@ -1,0 +1,28 @@
+version: '3.2'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "5000:5000"
+    networks:
+      - my_network
+
+  db:
+    build: ./database
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: sentiment_database
+      MYSQL_USER: my_user
+      MYSQL_PASSWORD: my_password
+    networks:
+      - my_network
+    volumes:
+      - db_data:/var/lib/mysql
+
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  db_data:
