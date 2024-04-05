@@ -20,6 +20,20 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+  ui:
+    build: ./ui
+    ports:
+      - "80:80"
+    networks:
+      - my_network
+
+  scrape:
+    build: ./data_scrape
+    ports:
+      - "7000:7000"
+    networks:
+      - my_network
+
 networks:
   my_network:
     driver: bridge

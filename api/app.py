@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import json
 from pydantic import BaseModel, Field
 import uvicorn
@@ -60,6 +60,35 @@ async def create_items(data: DataIn):
             connection.commit() #need to commit changes, otherwise database wont be updated
             cursor.close()
             connection.close()
+
+@app.post("/db_clear")
+async def clear_table():
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = 'DELETE FROM comments'
+        cursor.execute(query)
+        return {
+            "message": "Status OK, db table 'comments' cleard"
+            }
+    except mysql.connector.Error as error:
+        return f"Error: {error}"
+    finally:
+        if connection.is_connected():
+            connection.commit() #need to commit changes, otherwise database wont be updated
+            cursor.close()
+            connection.close()
+
+@app.post("/link")
+async def get_link(link: dict):
+    try:
+        page_link = link.get("link")
+        if page_link:
+            return {"message": "Link received successfully."}
+        else:
+            raise HTTPException(status_code=400, detail="Link not provided.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)
