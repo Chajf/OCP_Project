@@ -15,6 +15,11 @@ class DataOut(BaseModel):
     # id: int = Field(..., title = "ID number of comment in database")
     # comment: str = Field(..., title = "Scraped comment from 4Chan forum")
 
+class CountOut(BaseModel):
+    db_count: int = Field(..., title="Rows count in database")
+    # id: int = Field(..., title = "ID number of comment in database")
+    # comment: str = Field(..., title = "Scraped comment from 4Chan forum")
+
 db_config = {
     "host":"db",
     "port":"3306",
@@ -43,21 +48,24 @@ async def read_items():
             cursor.close()
             connection.close()
 
-@app.post("/data_insert")
-async def create_items(data: DataIn):
+@app.get("/data_count", response_model=CountOut)
+async def count_items():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = f'INSERT INTO comments (text_content) VALUES ("{data.text}")'
+        query = "SELECT COUNT(*) FROM comments"
         cursor.execute(query)
-        return {
-            "message": "Status OK, data added to db"
+        row_count = cursor.fetchone()[0]
+
+        data = {
+            "db_count": row_count
             }
+        result_data: CountOut = CountOut(**data)
+        return result_data
     except mysql.connector.Error as error:
         return f"Error: {error}"
     finally:
         if connection.is_connected():
-            connection.commit() #need to commit changes, otherwise database wont be updated
             cursor.close()
             connection.close()
 
@@ -84,11 +92,39 @@ async def get_link(link: dict):
     try:
         page_link = link.get("link")
         if page_link:
-            return {"message": "Link received successfully."}
+            scrape_response = requests.get(f"http://scrape:7000/scrape?link={page_link}")
+            if scrape_response.status_code == 200:
+                scrape_data = scrape_response.json()
+                insert_response = data_insert(scrape_data)
+                if insert_response.status_code == 200:
+                    return {"message": "Page scraped and data inserted into database successfully"}
+                else:
+                    raise HTTPException(status_code=insert_response.status_code, detail="Failed to insert data into database")
+            else:
+                raise HTTPException(status_code=scrape_response.status_code, detail="Scraping failed")
         else:
             raise HTTPException(status_code=400, detail="Link not provided.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    
+def data_insert(data):
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        comments = data.get("text_contents")
+        for item in comments:
+            query = f'INSERT INTO comments (text_content) VALUES ("{item}")'
+            cursor.execute(query)
+        return {
+            "message": "Status OK, data added to db"
+            }
+    except mysql.connector.Error as error:
+        return f"Error: {error}"
+    finally:
+        if connection.is_connected():
+            connection.commit() #need to commit changes, otherwise database wont be updated
+            cursor.close()
+            connection.close()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)
