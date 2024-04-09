@@ -107,6 +107,12 @@ async def get_link(link: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     
+@app.post("/status")
+async def check_model():
+    model_status = requests.get("http://model:6000/check_model")
+    print(model_status.json())
+    return {"message":"Connection OK"}
+    
 def data_insert(data):
     try:
         connection = mysql.connector.connect(**db_config)

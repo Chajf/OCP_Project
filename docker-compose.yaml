@@ -34,6 +34,13 @@ services:
     networks:
       - my_network
 
+  model:
+    build: ./model
+    ports:
+      - "6000:6000"
+    networks:
+      - my_network
+
 networks:
   my_network:
     driver: bridge
