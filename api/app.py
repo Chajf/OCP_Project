@@ -53,7 +53,7 @@ async def count_items():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = "SELECT COUNT(*) FROM comments"
+        query = "SELECT COUNT(*) FROM sentiment"
         cursor.execute(query)
         row_count = cursor.fetchone()[0]
 
@@ -74,10 +74,10 @@ async def clear_table():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = 'DELETE FROM comments'
+        query = 'DELETE FROM sentiment'
         cursor.execute(query)
         return {
-            "message": "Status OK, db table 'comments' cleard"
+            "message": "Status OK, db table 'sentiment' cleard"
             }
     except mysql.connector.Error as error:
         return f"Error: {error}"
@@ -100,10 +100,6 @@ async def get_link(link: dict):
                     return {"message": "Page scraped and data inserted into database successfully"}
                 else:
                     raise HTTPException(status_code=insert_response.status_code, detail="Failed to insert data into database")
-                # if insert_response.status_code == 200:
-                #     return {"message": "Page scraped and data inserted into database successfully"}
-                # else:
-                #     raise HTTPException(status_code=insert_response.status_code, detail="Failed to insert data into database")
             else:
                 raise HTTPException(status_code=scrape_response.status_code, detail="Scraping failed")
         else:
@@ -122,12 +118,22 @@ async def predict_sentiment():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = f'SELECT text_content FROM comments LIMIT 5'
+        query = f'SELECT text_content FROM comments'
         cursor.execute(query)
         comments = cursor.fetchall()
         comments = [comment[0] for comment in comments]
         preds = requests.post("http://model:6000/predict", json={"data":comments})
-        return {"result": preds.json()}
+        sentiment = preds.json().get("pred")
+        labels = []
+        for i in sentiment:
+            labels.append(i["label"])
+            query = f'INSERT INTO sentiment (label, val) VALUES ("{i["label"]}",{i["score"]})'
+            cursor.execute(query)
+        query = 'DELETE FROM comments'
+        cursor.execute(query)
+        return {
+            "pred": labels
+            }
     except mysql.connector.Error as error:
         return f"Error: {error}"
     finally:

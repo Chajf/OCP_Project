@@ -18,3 +18,4 @@ if st.button("Send POST request"):
 
 if st.button("Make prediction"):
     pred = requests.post("http://api:5000/prediction")
+    st.write(pred.json().get("pred"))
