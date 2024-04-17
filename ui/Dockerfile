@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Install libs
-RUN pip install streamlit requests
+RUN pip install streamlit requests plotly wordcloud matplotlib
 
 # Set the working directory in the container
 WORKDIR /app

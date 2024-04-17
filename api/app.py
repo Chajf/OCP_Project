@@ -49,6 +49,27 @@ async def read_items():
             cursor.close()
             connection.close()
 
+@app.get("/get_comments", response_model=DataOut)
+async def read_items():
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        cursor.execute('SELECT text_content FROM comments')
+        data = cursor.fetchall()
+        # print(data)
+        data = [d[0] for d in data]
+        data = {
+            "db_content": data
+            }
+        result_data: DataOut = DataOut(**data)
+        return result_data
+    except mysql.connector.Error as error:
+        return f"Error: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 @app.get("/sentiment_count", response_model=CountOut)
 async def count_items():
     try:

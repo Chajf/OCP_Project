@@ -1,5 +1,9 @@
 import streamlit as st
 import requests
+from collections import Counter
+import plotly.graph_objs as go
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Sentiment Analysis", layout="wide")
 st.title("Sentiment Analysis App")
@@ -47,3 +51,34 @@ with c1:
     st.metric("Comments in database", st.session_state.com_count)
 with c2:
     st.metric("Predictions in database", len(st.session_state.pred_all))
+
+# st.write(Counter(st.session_state.pred_all))
+
+coms = requests.get("http://api:5000/get_comments").json().get("db_content")
+stop_words = ["https", "co", "RT"] + list(STOPWORDS)
+positive_wordcloud = WordCloud(max_font_size=50, max_words=100, background_color="white", stopwords = stop_words).generate(str(coms))
+# Create a figure and axis
+fig, ax = plt.subplots()
+
+# Plot the word cloud
+ax.imshow(positive_wordcloud, interpolation="bilinear")
+ax.set_title("4chan thread Wordcloud")
+ax.axis("off")
+
+# Display the plot using Streamlit
+st.pyplot(fig)
+
+# Sample Counter object
+data_counter = Counter(st.session_state.pred_all)
+
+# Extracting labels and counts
+labels = list(data_counter.keys())
+counts = list(data_counter.values())
+
+layout = go.Layout(title='Bar Plot of 4chan posts sentiment')
+
+# Creating a bar plot
+bar_plot = go.Bar(x=labels, y=counts)
+fig = go.Figure(data=[bar_plot], layout=layout)
+
+st.plotly_chart(fig, use_container_width=True)
