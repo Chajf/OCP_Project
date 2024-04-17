@@ -96,10 +96,14 @@ async def get_link(link: dict):
             if scrape_response.status_code == 200:
                 scrape_data = scrape_response.json()
                 insert_response = data_insert(scrape_data)
-                if insert_response.status_code == 200:
+                if insert_response.get("message")=="Status OK, data added to db":
                     return {"message": "Page scraped and data inserted into database successfully"}
                 else:
                     raise HTTPException(status_code=insert_response.status_code, detail="Failed to insert data into database")
+                # if insert_response.status_code == 200:
+                #     return {"message": "Page scraped and data inserted into database successfully"}
+                # else:
+                #     raise HTTPException(status_code=insert_response.status_code, detail="Failed to insert data into database")
             else:
                 raise HTTPException(status_code=scrape_response.status_code, detail="Scraping failed")
         else:
@@ -112,6 +116,25 @@ async def check_model():
     model_status = requests.get("http://model:6000/check_model")
     print(model_status.json())
     return {"message":"Connection OK"}
+
+@app.post("/prediction")
+async def predict_sentiment():
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f'SELECT text_content FROM comments LIMIT 5'
+        cursor.execute(query)
+        comments = cursor.fetchall()
+        comments = [comment[0] for comment in comments]
+        preds = requests.post("http://model:6000/predict", json={"data":comments})
+        return {"result": preds.json()}
+    except mysql.connector.Error as error:
+        return f"Error: {error}"
+    finally:
+        if connection.is_connected():
+            connection.commit() #need to commit changes, otherwise database wont be updated
+            cursor.close()
+            connection.close()
     
 def data_insert(data):
     try:
