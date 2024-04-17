@@ -28,14 +28,15 @@ db_config = {
     "database":"sentiment_database"
 }
 
-@app.get("/data", response_model=DataOut)
+@app.get("/get_data", response_model=DataOut)
 async def read_items():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        cursor.execute('SELECT * FROM comments LIMIT 5')
+        cursor.execute('SELECT (label) FROM sentiment')
         data = cursor.fetchall()
         # print(data)
+        data = [d[0] for d in data]
         data = {
             "db_content": data
             }
@@ -48,12 +49,33 @@ async def read_items():
             cursor.close()
             connection.close()
 
-@app.get("/data_count", response_model=CountOut)
+@app.get("/sentiment_count", response_model=CountOut)
 async def count_items():
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
         query = "SELECT COUNT(*) FROM sentiment"
+        cursor.execute(query)
+        row_count = cursor.fetchone()[0]
+
+        data = {
+            "db_count": row_count
+            }
+        result_data: CountOut = CountOut(**data)
+        return result_data
+    except mysql.connector.Error as error:
+        return f"Error: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+@app.get("/comments_count", response_model=CountOut)
+async def count_items():
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = "SELECT COUNT(*) FROM comments"
         cursor.execute(query)
         row_count = cursor.fetchone()[0]
 
