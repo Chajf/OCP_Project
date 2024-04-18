@@ -18,7 +18,7 @@ The application is composed of several interconnected containers, each serving a
 
 ## Application Diagram
 
-<img src="/images/OCP_diagram.png" height="600">
+<img src="/images/OCP_diagram.png" height="500">
 
 This is the application diagram that shows the architecture of the application and how the different containers interact with each other.
 
@@ -38,7 +38,7 @@ After scraping the posts, a wordcloud is generated to visually represent the mos
 
 ### Sentiment Barplot
 
-<img src="/images/ui_bar.png" height="700">
+<img src="/images/ui_bar.png">
 
 This barplot shows the sentiment analysis results for the entire database. It categorizes the sentiments as either positive or negative and displays the count of each.
 
