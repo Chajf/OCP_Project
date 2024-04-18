@@ -6,16 +6,6 @@ sentiment_pipeline = pipeline("sentiment-analysis")
 
 app = Flask(__name__)
 
-# @app.route("/check_model", methods = ["POST"])
-# def check_model():
-#     return {"status":"Model OK"}
-#     #requests.post("http://api:5000/check_model", json={"status":"Model OK"})
-
-@app.route("/check_model", methods = ["GET"])
-def check_model():
-    return {"status":"Model OK"}
-    #requests.post("http://api:5000/check_model", json={"status":"Model OK"})
-
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json.get("data")

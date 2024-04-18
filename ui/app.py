@@ -5,8 +5,12 @@ import plotly.graph_objs as go
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Sentiment Analysis", layout="wide")
+st.set_page_config(page_title="Sentiment Analysis")#, layout="wide")
 st.title("Sentiment Analysis App")
+
+st.header("Control panel")
+
+## Add variables to sessions state
 
 if 'com_count' not in st.session_state:
     st.session_state.com_count = 0
@@ -27,6 +31,7 @@ if 'pred_all' not in st.session_state:
     else:
         st.session_state.pred_all = 0
 
+# input for page link
 link = st.text_input("Page link")
 
 c1,c2,c3 = st.columns(3)
@@ -36,14 +41,16 @@ with c1:
         response = requests.post("http://api:5000/link", json={"link":link})
 with c2:
     if st.button("Make prediction"):
-        pred = requests.post("http://api:5000/prediction")
-        pred_all = requests.get("http://api:5000/get_data")
+        pred = requests.post("http://api:5000/prediction") #prediction for scraped data
+        pred_all = requests.get("http://api:5000/get_data") #prediction for whole database
         st.session_state.pred_all = pred_all.json().get("db_content")
         st.session_state.pred = pred.json().get("pred")
 with c3:
     if st.button("Clear sentiment database"):
         requests.post("http://api:5000/db_clear")
         st.session_state.pred_all = 0
+
+# Counts for KPIs
 
 com_count = requests.get("http://api:5000/comments_count")
 st.session_state.com_count = com_count.json().get("db_count")
@@ -58,6 +65,9 @@ with c1:
 with c2:
     st.metric("Predictions in database", st.session_state.sen_count)
 
+# WordCloud plot
+
+st.header("Scrapped data")
 
 coms = requests.get("http://api:5000/get_comments").json().get("db_content")
 if len(coms)!=0:
@@ -78,6 +88,8 @@ try:
     st.pyplot(fig)
 except:
     st.info("To generate Wordcloud you need to scrape some threads.", icon="ℹ️")
+
+# Barplot for scraped
 
 try:
     data_counter = Counter(st.session_state.pred)
@@ -102,6 +114,10 @@ try:
     st.plotly_chart(fig, use_container_width=True)
 except:
     st.info("To generate barplot you need to scrape some threads and make prediction.", icon="ℹ️")
+
+# Barplot for whole db
+
+st.header("Database data")
 
 try:
     data_counter = Counter(st.session_state.pred_all)
