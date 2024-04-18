@@ -2,6 +2,7 @@ from transformers import pipeline
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import requests
 
+#initialize model
 sentiment_pipeline = pipeline("sentiment-analysis")
 
 app = Flask(__name__)
@@ -9,7 +10,7 @@ app = Flask(__name__)
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json.get("data")
-    pred = sentiment_pipeline(data)
+    pred = sentiment_pipeline(data) #make prediction from provided list
     return {"pred": pred}
 
 if __name__ == '__main__':

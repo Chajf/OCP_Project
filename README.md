@@ -18,7 +18,9 @@ The application is composed of several interconnected containers, each serving a
 
 ## Application Diagram
 
-<img src="/images/OCP_diagram.png" height="500">
+<p align="center">
+    <img src="/images/OCP_diagram.png" height="500">
+</p>
 
 This is the application diagram that shows the architecture of the application and how the different containers interact with each other.
 
@@ -26,19 +28,25 @@ This is the application diagram that shows the architecture of the application a
 
 ### Initial UI
 
-<img src="/images/ui_nodata.png" height="700">
+<p align="center">
+    <img src="/images/ui_nodata.png" height="700">
+</p>
 
 This is how the user interface looks like when the application is started. It's clean and ready for the user to interact with.
 
 ### Wordcloud from Scraped Text
 
-<img src="/images/ui_scrape.png" height="700">
+<p align="center">
+    <img src="/images/ui_scrape.png" height="700">
+</p>
 
 After scraping the posts, a wordcloud is generated to visually represent the most frequently used words in the scraped threads.
 
 ### Sentiment Barplot
 
-<img src="/images/ui_bar.png">
+<p align="center">
+    <img src="/images/ui_bar.png">
+</p>
 
 This barplot shows the sentiment analysis results for the entire database. It categorizes the sentiments as either positive or negative and displays the count of each.
 

@@ -7,12 +7,14 @@ app = Flask(__name__)
 
 @app.route("/scrape", methods = ["GET"])
 def scrape_data():
-    link = request.args.get("link")
+    link = request.args.get("link") #get link from fastapi container request
 
-    page = requests.get(link)
-    tree = html.fromstring(page.content)
+    page = requests.get(link) #get page structure
+    tree = html.fromstring(page.content) #make tree structure from page contnent
+    #use XPath for scrape
     comments = tree.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "reply", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "postMessage", " " ))]')
     
+    #pattern to remove >>
     pattern = re.compile(r'>>?\d+')
     text_contents = [re.sub(pattern, '', comment.text_content().strip()).replace('"', "'") for comment in comments]
     text_contents
